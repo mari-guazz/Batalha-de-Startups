@@ -85,16 +85,16 @@ function renderStartups(startupsContainer) {
         startupDiv.innerHTML = `
             <h3>${startup.nome}</h3>
             <p><strong>Slogan:</strong> ${startup.slogan}</p>
-            <p><strong>Ano de Fundação:</strong> ${startup.ano}</p>
-            <p><strong>Pontuação:</strong>${startup.pontuacao}</p>
+            <p><strong>Ano de Fundação:</strong> ${startup.anoFundacao}</p>
+            <p><strong>Pontuação:</strong> ${startup.pontuacao}</p>
         `;
         startupsContainer.appendChild(startupDiv);
-    })
+    });
 }
 
 function renderBracket(startupsContainer, bracketContainer, participants) {
-    bracketContainer.innerHTML = ""; // Limpa o conteudo anterior
-    const pairs = sortearPares(participants);
+    bracketContainer.innerHTML = ""; // Clear previous bracket
+    const pairs = sortearPares(participants); // Pair startups randomly
 
     pairs.forEach(([startupA, startupB], index) => {
         const matchDiv = document.createElement("div");
@@ -114,22 +114,22 @@ function renderBracket(startupsContainer, bracketContainer, participants) {
         bracketContainer.appendChild(matchDiv);
 
         matchDiv.querySelector(".battleBtn").addEventListener("click", () => {
-            currentBattle = { startupA, startupB, index };
-            aplicarEventosManual(startupsContainer, startupA, () => {
-                aplicarEventosManual(startupsContainer, startupB, () => {
+            aplicarEventosManual(startupA, () => {
+                aplicarEventosManual(startupB, () => {
                     const vencedor = determinarVencedor(startupA, startupB);
-                    renderStartups(startupsContainer);
                     alert(`Vencedor: ${vencedor.nome}`);
                     const remaining = pairs.flat().filter(s => s !== startupA && s !== startupB);
                     remaining.push(vencedor);
 
-                    // Remove a batalha que foi feita
+                    // Remove the match from the bracket
                     matchDiv.remove();
 
+                    // If only one startup remains, declare the champion
                     if (remaining.length === 1) {
                         alert(`🏆 A grande vencedora do torneio é: ${remaining[0].nome} com ${remaining[0].pontuacao} pontos!`);
                         console.log("Campeã do torneio:", remaining[0]);
-                    } else {
+                    } else if (remaining.length > 1 && remaining.length % 2 === 0) {
+                        // Proceed to the next round if there are more matches
                         renderBracket(startupsContainer, bracketContainer, remaining);
                     }
                 });
