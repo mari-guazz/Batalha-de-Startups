@@ -1,5 +1,5 @@
  /* Add basic styles for modal and layout */
- #modalCadastro {
+ #modalCadastro, #modalEvento {
     display: none;
     position: fixed;
     top: 50%;

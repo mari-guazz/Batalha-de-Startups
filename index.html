@@ -7,11 +7,9 @@
 </head>
 <body>
     <link href="style.css" rel="stylesheet"></link>
-    <h1>STARTUP RUSH!</h1>
-    <button id="iniciarCampeonato">Iniciar Campeonato</button>
 
     <div id="modalCadastro">
-        <button id="closeModal">Fechar</button>
+        <button id="closeCadastroModal">Fechar</button>
         <h2>Cadastro de Startups</h2>
         <form id="formCadastro">
             <input type="text" id="nomeStartup" placeholder="Nome da Startup" required />
@@ -21,9 +19,21 @@
         </form>
     </div>
 
-    <div id="startupsContainer"></div>
+    <div id="modalEvento">
+        <div id="eventContent">
+            <h2>Aplicar Eventos</h2>
+            <p id="startupName"></p>
+            <ul id="eventList"></ul>
+            <button id="closeEventModal">Fechar</button>
+        </div>
+    </div>
 
+    <h1>STARTUP RUSH!</h1>
+    <button id="iniciarCampeonato">Iniciar Campeonato</button>
     <button id="continuarTorneio" disabled>Continuar para o Torneio</button>
+
+    <div id="bracketContainer"></div>
+    <div id="startupsContainer"></div>
 
     <script src="script.js"></script>
 </body>
