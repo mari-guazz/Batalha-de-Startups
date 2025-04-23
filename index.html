@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARTUP RUSH</title>
+</head>
+<body>
+    <link href="style.css" rel="stylesheet"></link>
+    <h1>STARTUP RUSH!</h1>
+    <button id="iniciarCampeonato">Iniciar Campeonato</button>
+
+    <div id="modalCadastro">
+        <button id="closeModal">Fechar</button>
+        <h2>Cadastro de Startups</h2>
+        <form id="formCadastro">
+            <input type="text" id="nomeStartup" placeholder="Nome da Startup" required />
+            <input type="text" id="sloganStartup" placeholder="Slogan da Startup" required />
+            <input type="number" id="anoFundacao" placeholder="Ano de Fundação" required />
+            <button type="submit">Cadastrar Startup</button>
+        </form>
+    </div>
+
+    <div id="startupsContainer"></div>
+
+    <button id="continuarTorneio" disabled>Continuar para o Torneio</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
