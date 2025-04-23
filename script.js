@@ -13,12 +13,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("formCadastro");
     const startupsContainer = document.getElementById("startupsContainer");
     const continuarBtn = document.getElementById("continuarTorneio");
-    const nomeInput = document.getElementById("nomeStartup");
-    const sloganInput = document.getElementById("sloganStartup");
-    const anoInput = document.getElementById("anoFundacao");
-    const submitBtn = form.querySelector("button[type='submit']");
+    const bracketContainer = document.createElement("div");
+    bracketContainer.id = "bracketContainer";
+    document.body.appendChild(bracketContainer);
+
+    const eventModal = document.createElement("div");
+    eventModal.id = "eventModal";
+    eventModal.style.display = "none";
+    eventModal.innerHTML = `
+        <div id="eventContent">
+            <h2>Aplicar Eventos</h2>
+            <p id="startupName"></p>
+            <ul id="eventList"></ul>
+            <button id="closeEventModal">Fechar</button>
+        </div>
+    `;
+    document.body.appendChild(eventModal);
 
     let startups = [];
+    let currentBattle = null;
 
     iniciarBtn.addEventListener("click", () => {
         modal.style.display = "block";
@@ -31,9 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", (e) => {
         e.preventDefault();
 
-        const nome = nomeInput.value;
-        const slogan = sloganInput.value;
-        const ano = anoInput.value;
+        const nome = document.getElementById("nomeStartup").value;
+        const slogan = document.getElementById("sloganStartup").value;
+        const ano = document.getElementById("anoFundacao").value;
 
         if (!nome || !slogan || isNaN(parseInt(ano))) {
             alert("Dados inválidos! Por favor, preencha todos os campos corretamente.");
@@ -53,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <h3>${nome}</h3>
             <p><strong>Slogan:</strong> ${slogan}</p>
             <p><strong>Ano de Fundação:</strong> ${ano}</p>
-            <p><strong>Pontuação Inicial:</strong> 70 pontos</p>
+            <p><strong>Pontuação:</strong> 70 </p>
         `;
         startupsContainer.appendChild(startupDiv);
 
@@ -68,18 +81,101 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Disable inputs and submit button if the limit is reached
         if (startups.length === 8) {
-            nomeInput.disabled = true;
-            sloganInput.disabled = true;
-            anoInput.disabled = true;
-            submitBtn.disabled = true;
-            modal.style.display = "none";
+            document.getElementById("nomeStartup").disabled = true;
+            document.getElementById("sloganStartup").disabled = true;
+            document.getElementById("anoFundacao").disabled = true;
+            form.querySelector("button[type='submit']").disabled = true;
         }
     });
 
     continuarBtn.addEventListener("click", () => {
         modal.style.display = "none";
-        iniciarTorneio(startups);
+        renderBracket(startups);
     });
+
+    function renderBracket(participants) {
+        bracketContainer.innerHTML = ""; // Clear previous bracket
+        const pairs = sortearPares(participants);
+
+        pairs.forEach(([startupA, startupB], index) => {
+            const matchDiv = document.createElement("div");
+            matchDiv.className = "match";
+            matchDiv.innerHTML = `
+                <div class="startup">
+                    <h3>${startupA.nome}</h3>
+                    <p>Pontuação: ${startupA.pontuacao}</p>
+                </div>
+                <div class="vs">VS</div>
+                <div class="startup">
+                    <h3>${startupB.nome}</h3>
+                    <p>Pontuação: ${startupB.pontuacao}</p>
+                </div>
+                <button class="battleBtn" data-index="${index}">Realizar Batalha</button>
+            `;
+            bracketContainer.appendChild(matchDiv);
+
+            matchDiv.querySelector(".battleBtn").addEventListener("click", () => {
+                currentBattle = { startupA, startupB, index };
+                aplicarEventosManual(startupA, () => {
+                    aplicarEventosManual(startupB, () => {
+                        const vencedor = determinarVencedor(startupA, startupB);
+                        alert(`Vencedor: ${vencedor.nome}`);
+                        const remaining = pairs.flat().filter(s => s !== startupA && s !== startupB);
+                        remaining.push(vencedor);
+
+                        if (remaining.length === 1) {
+                            alert(`🏆 A grande vencedora do torneio é: ${remaining[0].nome} com ${remaining[0].pontuacao} pontos!`);
+                            console.log("Campeã do torneio:", remaining[0]);
+                        } else {
+                            renderBracket(remaining);
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    function aplicarEventosManual(startup, callback) {
+        const eventList = document.getElementById("eventList");
+        const startupName = document.getElementById("startupName");
+        const closeEventModal = document.getElementById("closeEventModal");
+
+        startupName.textContent = `Eventos para: ${startup.nome}`;
+        eventList.innerHTML = "";
+
+        eventos.forEach(evento => {
+            const li = document.createElement("li");
+            li.textContent = `${evento.nome} (${evento.pontos > 0 ? "+" : ""}${evento.pontos} pontos)`;
+            li.addEventListener("click", () => {
+                startup.pontuacao += evento.pontos;
+                alert(`Evento "${evento.nome}" aplicado a ${startup.nome}. Nova pontuação: ${startup.pontuacao}`);
+                li.style.textDecoration = "line-through";
+                li.style.pointerEvents = "none";
+            });
+            eventList.appendChild(li);
+        });
+
+        eventModal.style.display = "block";
+
+        closeEventModal.onclick = () => {
+            eventModal.style.display = "none";
+            callback();
+        };
+    }
+
+    function determinarVencedor(startupA, startupB) {
+        if (startupA.pontuacao > startupB.pontuacao) {
+            startupA.pontuacao += 30;
+            return startupA;
+        } else if (startupB.pontuacao > startupA.pontuacao) {
+            startupB.pontuacao += 30;
+            return startupB;
+        } else {
+            const vencedor = Math.random() < 0.5 ? startupA : startupB;
+            vencedor.pontuacao += 30;
+            return vencedor;
+        }
+    }
 });
 
 function sortearPares(startups) {
@@ -91,79 +187,4 @@ function sortearPares(startups) {
     }
 
     return pares;
-}
-
-function aplicarEventosManual(startup, rodadaId) {
-    const eventosAplicados = new Set();
-
-    alert(`\n📣 Eventos para ${startup.nome}`);
-
-    while (true) {
-        let menu = `Atribuir eventos para "${startup.nome}" (Rodada ${rodadaId})\nPontuação atual: ${startup.pontuacao}\n\n`;
-        eventos.forEach(evento => {
-            const jaUsado = eventosAplicados.has(evento.id) ? "(já usado)" : "";
-            menu += `${evento.id} - ${evento.nome} (${evento.pontos > 0 ? "+" : ""}${evento.pontos}) ${jaUsado}\n`;
-        });
-        menu += `0 - Encerrar eventos para esta startup\n`;
-
-        const escolha = parseInt(prompt(menu));
-
-        if (escolha === 0) break;
-
-        const evento = eventos.find(e => e.id === escolha);
-
-        if (!evento) {
-            alert("Evento inválido.");
-        } else if (eventosAplicados.has(evento.id)) {
-            alert("Esse evento já foi aplicado a esta startup nesta rodada.");
-        } else {
-            startup.pontuacao += evento.pontos;
-            eventosAplicados.add(evento.id);
-            alert(`Evento "${evento.nome}" aplicado a ${startup.nome}. Nova pontuação: ${startup.pontuacao}`);
-        }
-    }
-}
-
-function executarBatalha(startupA, startupB, rodadaId) {
-    alert(`\n🔥 BATALHA ENTRE:\n${startupA.nome} VS ${startupB.nome}`);
-
-    aplicarEventosManual(startupA, rodadaId);
-    aplicarEventosManual(startupB, rodadaId);
-
-    if (startupA.pontuacao > startupB.pontuacao) {
-        alert(`✅ ${startupA.nome} venceu a batalha! Ganhou +30 pontos.`);
-        startupA.pontuacao += 30;
-        return startupA;
-    } else if (startupB.pontuacao > startupA.pontuacao) {
-        alert(`✅ ${startupB.nome} venceu a batalha! Ganhou +30 pontos.`);
-        startupB.pontuacao += 30;
-        return startupB;
-    } else {
-        const vencedor = Math.random() < 0.5 ? startupA : startupB;
-        alert(`🤝 Empate! ${vencedor.nome} foi escolhido aleatoriamente como vencedor e ganhou +30 pontos.`);
-        vencedor.pontuacao += 30;
-        return vencedor;
-    }
-}
-
-function iniciarTorneio(startups) {
-    let rodada = 1;
-    let participantes = [...startups];
-
-    while (participantes.length > 1) {
-        alert(`\n🏁 RODADA ${rodada}: ${participantes.length} startups`);
-        const pares = sortearPares(participantes);
-        const classificados = [];
-
-        pares.forEach(([a, b]) => {
-            const vencedor = executarBatalha(a, b, rodada);
-            classificados.push(vencedor);
-        });
-
-        participantes = classificados;
-        rodada++;
-    }
-
-    alert(`🏆 A grande vencedora do torneio é: ${participantes[0].nome} com ${participantes[0].pontuacao} pontos!`);
-    console.log("Campeã do torneio:", participantes[0]);
 }

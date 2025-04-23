@@ -15,3 +15,34 @@
     padding: 10px;
     margin: 10px 0;
 }
+
+#bracketContainer {
+    margin-top: 20px;
+}
+
+.match {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.startup {
+    flex: 1;
+    text-align: center;
+}
+
+.vs {
+    font-weight: bold;
+    font-size: 20px;
+    margin: 0 10px;
+}
+
+.battleBtn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
